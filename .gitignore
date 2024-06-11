@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Virtual Environment
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# FastAPI
+*.db
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# uvicorn
+*.pid
+
+# Discord bot specific
+node_modules/
+dist/
+
+# Miscellaneous
+*.swp
+*~
+.cache/
+.cache
