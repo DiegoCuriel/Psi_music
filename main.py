@@ -26,6 +26,9 @@ intents.voice_states = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# Cola de canciones
+song_queue = []
+
 @bot.event
 async def on_ready():
     print(f"Bot conectado como {bot.user}")
@@ -33,7 +36,7 @@ async def on_ready():
 @bot.command(name='info')
 async def info_command(ctx):
     info_text = """
-    Este es un bot de ejemplo.
+    Yuu se la come
     """
     await ctx.send(info_text)
 
@@ -45,7 +48,10 @@ async def play_command(ctx, *, url):
             await ctx.send("¡Debes estar en un canal de voz para usar este comando!")
             return
 
-        vc = await voice_channel.connect()
+        if not ctx.voice_client:
+            vc = await voice_channel.connect()
+        else:
+            vc = ctx.voice_client
 
         track_id = url.split("/")[-1].split("?")[0]
         track = spotify.track(track_id)
@@ -65,15 +71,25 @@ async def play_command(ctx, *, url):
             info = ydl.extract_info(f"ytsearch:{track_name} {track_artists}", download=False)
             url2 = info['entries'][0]['url']
 
-        vc.play(discord.FFmpegPCMAudio(source=url2))
+        song_queue.append((url2, track_name, track_artists))
 
-        await ctx.send(f"Reproduciendo {track_name} por {track_artists}")
+        if not vc.is_playing():
+            await play_next_song(ctx)
+
+        await ctx.send(f"Agregado a la cola: {track_name} por {track_artists}")
     except Exception as e:
         await ctx.send(f"Error al intentar reproducir la canción: {e}")
 
+async def play_next_song(ctx):
+    if song_queue:
+        url, track_name, track_artists = song_queue.pop(0)
+        ctx.voice_client.play(discord.FFmpegPCMAudio(source=url), after=lambda e: bot.loop.create_task(play_next_song(ctx)))
+        await ctx.send(f"Reproduciendo {track_name} por {track_artists}")
+
 @bot.command(name='quit')
 async def quit_command(ctx):
-    await ctx.send("Desconectando...")
+    await ctx.send("Ya me voy alv")
+    song_queue.clear()
     await ctx.voice_client.disconnect()
 
 # Configuración de FastAPI
